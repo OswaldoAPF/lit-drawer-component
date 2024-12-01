@@ -1,0 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap');
+
+:root {
+  --background-color: #ffffff;
+  --primary-color: #8350E6;
+  --hover-background-color: #F3EEFC;
+  --hover-primary-color: #47279B;
+  --font-color: #3E4047;
+  --transition-02: all 0.2s ease;
+  --transition-03: all 0.3s ease;
+  --transition-04: all 0.4s ease;
+  --transition-05: all 0.5s ease;
+}
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: "Quicksand";
+}
+html,body {
+  background-color: rgb(121, 121, 121);
+  height: 100vh;
+  width: 100%;
+}
