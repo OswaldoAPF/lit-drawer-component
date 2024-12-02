@@ -293,9 +293,9 @@ class DrawerComponent extends LitElement {
   constructor() {
     super();
     this.group = { options: [], dropdowns: [] };
-    this.open = false
+    this.open = false;
     this.currentPath = window.location.pathname;
-    
+
     const params = new URLSearchParams(window.location.search);
     const drawerState = params.get('drawer');
     if (drawerState === 'open') {
@@ -305,34 +305,26 @@ class DrawerComponent extends LitElement {
 
   checkActiveOptions() {
     if (!this.currentPath || !this.group) return;
-  
+
     let needsUpdate = false;
-    this.group.options.forEach(option => {
+    const updateOptionState = (option) => {
       const isActive = this.currentPath.includes(option.key);
       if (option.active !== isActive) {
         option.active = isActive;
         needsUpdate = true;
       }
-    });
+    };
 
-    this.group.dropdowns.forEach(dropdown => {
-      dropdown.options.forEach(option => {
-        const isActive = this.currentPath.includes(option.key);
-        if (option.active !== isActive) {
-          option.active = isActive;
-          needsUpdate = true;
-        }
-      });
-    });
-  
+    this.group.options.forEach(updateOptionState);
+    this.group.dropdowns.forEach(dropdown => dropdown.options.forEach(updateOptionState));
+
     if (needsUpdate) {
       this.requestUpdate();
     }
   }
 
-
   toggleDrawer(event) {
-    event.stopPropagation(); 
+    event.stopPropagation();
     this.open = !this.open;
 
     if (!this.open) {
@@ -341,6 +333,10 @@ class DrawerComponent extends LitElement {
       });
     }
 
+    this.updateDrawerState();
+  }
+
+  updateDrawerState() {
     const state = this.open ? 'open' : 'closed';
     const params = new URLSearchParams(window.location.search);
     params.set('drawer', state);
@@ -349,11 +345,13 @@ class DrawerComponent extends LitElement {
 
   handleOptionClick(option, event) {
     event.stopPropagation();
-    this.open = true;
+    if (this.open !== true) {
+      this.open = true;
+    }
     this.currentPath = option.key;
-  
+
     this.checkActiveOptions();
-  
+
     this.dispatchEvent(
       new CustomEvent('option-selected', {
         detail: { key: option.key, label: option.label },
@@ -365,7 +363,7 @@ class DrawerComponent extends LitElement {
 
   toggleDropdown(index, event) {
     event.stopPropagation();
-    this.open = true
+    this.open = true;
     this.group.dropdowns.forEach((dropdown, i) => {
       dropdown.open = i === index ? !dropdown.open : false;
     });
@@ -376,7 +374,7 @@ class DrawerComponent extends LitElement {
     super.connectedCallback();
     document.addEventListener('click', this.handleOutsideClick.bind(this));
   }
-  
+
   disconnectedCallback() {
     super.disconnectedCallback();
     document.removeEventListener('click', this.handleOutsideClick.bind(this));
@@ -384,31 +382,19 @@ class DrawerComponent extends LitElement {
 
   handleOutsideClick(event) {
     const drawer = this.shadowRoot.querySelector('.drawer');
-    
+
     if (drawer && !drawer.contains(event.target) && this.open) {
       this.open = false;
-      if (!this.open) {
-        this.group.dropdowns.forEach(dropdown => {
-          dropdown.open = false;
-        });
-      }
-
-      this.dispatchEvent(
-        new CustomEvent('drawer-closed', {
-          bubbles: true,
-          composed: true,
-        })
-      );
-
-      const params = new URLSearchParams(window.location.search);
-      params.set('drawer', 'closed');
-      window.history.replaceState({}, '', `${window.location.pathname}?${params}`);
+      this.group.dropdowns.forEach(dropdown => {
+        dropdown.open = false;
+      });
+      this.dispatchEvent(new CustomEvent('drawer-closed', { bubbles: true, composed: true }));
+      this.updateDrawerState();
     }
   }
 
   updated(changedProperties) {
     super.updated(changedProperties);
-  
     if (changedProperties.has('currentPath') || changedProperties.has('group')) {
       this.checkActiveOptions();
     }
