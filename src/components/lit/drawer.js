@@ -290,115 +290,116 @@ class DrawerComponent extends LitElement {
 
   `;
 
-  constructor() {
-    super();
-    this.group = { options: [], dropdowns: [] };
-    this.open = false;
-    this.currentPath = window.location.pathname;
+constructor() {
+  super();
+  this.group = { options: [], dropdowns: [] };
+  this.open = false;
+  this.currentPath = window.location.pathname;
 
-    const params = new URLSearchParams(window.location.search);
-    const drawerState = params.get('drawer');
-    if (drawerState === 'open') {
-      this.open = true;
-    }
-  }
-
-  checkActiveOptions() {
-    if (!this.currentPath || !this.group) return;
-
-    let needsUpdate = false;
-    const updateOptionState = (option) => {
-      const isActive = this.currentPath.includes(option.key);
-      if (option.active !== isActive) {
-        option.active = isActive;
-        needsUpdate = true;
-      }
-    };
-
-    this.group.options.forEach(updateOptionState);
-    this.group.dropdowns.forEach(dropdown => dropdown.options.forEach(updateOptionState));
-
-    if (needsUpdate) {
-      this.requestUpdate();
-    }
-  }
-
-  toggleDrawer(event) {
-    event.stopPropagation();
-    this.open = !this.open;
-
-    if (!this.open) {
-      this.group.dropdowns.forEach(dropdown => {
-        dropdown.open = false;
-      });
-    }
-
-    this.updateDrawerState();
-  }
-
-  updateDrawerState() {
-    const state = this.open ? 'open' : 'closed';
-    const params = new URLSearchParams(window.location.search);
-    params.set('drawer', state);
-    window.history.replaceState({}, '', `${window.location.pathname}?${params}`);
-  }
-
-  handleOptionClick(option, event) {
-    event.stopPropagation();
-    if (this.open !== true) {
-      this.open = true;
-    }
-    this.currentPath = option.key;
-
-    this.checkActiveOptions();
-
-    this.dispatchEvent(
-      new CustomEvent('option-selected', {
-        detail: { key: option.key, label: option.label },
-        bubbles: true,
-        composed: true,
-      })
-    );
-  }
-
-  toggleDropdown(index, event) {
-    event.stopPropagation();
+  const params = new URLSearchParams(window.location.search);
+  const drawerState = params.get('drawer');
+  if (drawerState === 'open') {
     this.open = true;
-    this.group.dropdowns.forEach((dropdown, i) => {
-      dropdown.open = i === index ? !dropdown.open : false;
-    });
+  }
+}
+
+checkActiveOptions() {
+  if (!this.currentPath || !this.group) return;
+
+  let needsUpdate = false;
+  const updateOptionState = (option) => {
+    const isActive = this.currentPath.includes(option.key);
+    if (option.active !== isActive) {
+      option.active = isActive;
+      needsUpdate = true;
+    }
+  };
+
+  this.group.options.forEach(updateOptionState);
+  this.group.dropdowns.forEach(dropdown => dropdown.options.forEach(updateOptionState));
+
+  if (needsUpdate) {
     this.requestUpdate();
   }
+}
 
-  connectedCallback() {
-    super.connectedCallback();
-    document.addEventListener('click', this.handleOutsideClick.bind(this));
+toggleDrawer(event) {
+  event.stopPropagation();
+  this.open = !this.open;
+
+  if (!this.open) {
+    this.group.dropdowns.forEach(dropdown => {
+      dropdown.open = false;
+    });
   }
 
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    document.removeEventListener('click', this.handleOutsideClick.bind(this));
-  }
+  this.updateDrawerState();
+}
 
-  handleOutsideClick(event) {
-    const drawer = this.shadowRoot.querySelector('.drawer');
+updateDrawerState() {
+  const state = this.open ? 'open' : 'closed';
+  const params = new URLSearchParams(window.location.search);
+  params.set('drawer', state);
+  window.history.replaceState({}, '', `${window.location.pathname}?${params}`);
+}
 
-    if (drawer && !drawer.contains(event.target) && this.open) {
-      this.open = false;
-      this.group.dropdowns.forEach(dropdown => {
-        dropdown.open = false;
-      });
-      this.dispatchEvent(new CustomEvent('drawer-closed', { bubbles: true, composed: true }));
-      this.updateDrawerState();
-    }
-  }
+handleOptionClick(option, event) {
+  event.stopPropagation();
+  this.open = true;
+  this.currentPath = option.key;
 
-  updated(changedProperties) {
-    super.updated(changedProperties);
-    if (changedProperties.has('currentPath') || changedProperties.has('group')) {
-      this.checkActiveOptions();
-    }
+  this.checkActiveOptions();
+
+  this.dispatchEvent(
+    new CustomEvent('option-selected', {
+      detail: { key: option.key, label: option.label },
+      bubbles: true,
+      composed: true,
+    })
+  );
+}
+
+toggleDropdown(index, event) {
+  event.stopPropagation();
+  this.open = true;
+  this.group.dropdowns.forEach((dropdown, i) => {
+    dropdown.open = i === index ? !dropdown.open : false;
+  });
+
+  this.updateDrawerState()
+  this.requestUpdate();
+}
+
+connectedCallback() {
+  super.connectedCallback();
+  document.addEventListener('click', this.handleOutsideClick.bind(this));
+}
+
+disconnectedCallback() {
+  super.disconnectedCallback();
+  document.removeEventListener('click', this.handleOutsideClick.bind(this));
+}
+
+handleOutsideClick(event) {
+  const drawer = this.shadowRoot.querySelector('.drawer');
+
+  if (drawer && !drawer.contains(event.target) && this.open) {
+    this.open = false;
+    this.group.dropdowns.forEach(dropdown => {
+      dropdown.open = false;
+    });
+    this.dispatchEvent(new CustomEvent('drawer-closed', { bubbles: true, composed: true }));
+    this.updateDrawerState();
   }
+}
+
+updated(changedProperties) {
+  super.updated(changedProperties);
+
+  if (changedProperties.has('currentPath') || changedProperties.has('group')) {
+    this.checkActiveOptions();
+  }
+}
 
   render() {
     if (!this.group || !this.group.options) {

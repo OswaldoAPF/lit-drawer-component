@@ -46,7 +46,7 @@ export default {
     },
     handleOptionSelected(event) {
       const { key } = event.detail;
-      this.isOpen = this.$refs.drawer.open;
+      this.isOpen = this.$refs.drawer.open;  // Sync with the drawer's state
       this.$router.push(`${key}?drawer=${this.isOpen ? 'open' : 'closed'}`);
     },
     updateActiveOptions() {
