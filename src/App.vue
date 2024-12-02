@@ -1,7 +1,6 @@
 <template>
   <drawer-component
     ref="drawer"
-    :open="isOpen"
     :group="selectedOptions"
     :current-path="currentPath"
     @option-selected="handleOptionSelected"
