@@ -38,6 +38,7 @@ class DrawerComponent extends LitElement {
       background: var(--background-color);
       transition: var(--transition-05);
       font-family: var(--font-family);
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
       user-select: none;
       z-index: 10;
     }
