@@ -1,4 +1,4 @@
-# Drawer Component hecho con Lit, integrado en Vue
+# Drawer Component Lit + Vue3 + Vite
 
 ## Descripción  
 Este proyecto es un componente **Drawer** desarrollado con **Lit**, diseñado para integrarse fácilmente con aplicaciones de **Vue.js** u otros frameworks. Ofrece una solución modular y eficiente para implementar paneles laterales.
