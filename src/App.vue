@@ -1,4 +1,8 @@
 <template>
+  <div class="group__nav">
+    <button @click="selectOptions(0)">Group 1</button>
+    <button @click="selectOptions(1)">Group 2</button>
+  </div>
   <drawer-component
     ref="drawer"
     :group="selectedOptions"
@@ -11,11 +15,9 @@
     <p slot="json-name">{{ packageJson.name }}</p>
     <p slot="json-version">v{{ packageJson.version }}</p>
   </drawer-component>
+  
+  <router-view></router-view>
 
-  <div class="group__nav">
-    <button @click="selectOptions(0)">Group 1</button>
-    <button @click="selectOptions(1)">Group 2</button>
-  </div>
 </template>
 
 <script>
@@ -61,16 +63,10 @@ export default {
         dropdown.options.forEach(updateOptionStatus);
       });
     },
-    handleOptionSelected(event) {
-    const { key } = event.detail;
-    this.$router.push(`${key}?drawer=open`);
-    this.isOpen = true;
-  },
   },
   watch: {
     '$route'(to) {
       this.currentPath = to.path;
-      this.updateActiveOptions();
     },
   },
   mounted() {
@@ -113,6 +109,6 @@ export default {
 
 .group__nav button:focus {
   outline: none;
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  box-shadow: 0 0 5px var(--primary-color);
 }
 </style>

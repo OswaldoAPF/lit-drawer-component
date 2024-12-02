@@ -304,6 +304,19 @@ class DrawerComponent extends LitElement {
     }
   }
 
+  updateDrawerState() {
+    const state = this.open ? 'open' : 'closed';
+    const params = new URLSearchParams(window.location.search);
+    params.set('drawer', state);
+    window.history.replaceState({}, '', `${window.location.pathname}?${params}`);
+  }
+
+  updateDropdownState() {
+    this.group.dropdowns.forEach(dropdown => {
+      dropdown.open = false;
+    });
+  }
+
   checkActiveOptions() {
     if (!this.currentPath || !this.group) return;
 
@@ -328,27 +341,14 @@ class DrawerComponent extends LitElement {
     event.stopPropagation();
     this.open = !this.open;
 
-    if (!this.open) {
-      this.group.dropdowns.forEach(dropdown => {
-        dropdown.open = false;
-      });
-    }
-
+    this.updateDropdownState()
     this.updateDrawerState();
-  }
-
-  updateDrawerState() {
-    const state = this.open ? 'open' : 'closed';
-    const params = new URLSearchParams(window.location.search);
-    params.set('drawer', state);
-    window.history.replaceState({}, '', `${window.location.pathname}?${params}`);
   }
 
   handleOptionClick(option, event) {
     event.stopPropagation();
     this.open = true;
     this.currentPath = option.key;
-
     this.checkActiveOptions();
 
     this.dispatchEvent(
@@ -386,10 +386,8 @@ class DrawerComponent extends LitElement {
 
     if (drawer && !drawer.contains(event.target) && this.open) {
       this.open = false;
-      this.group.dropdowns.forEach(dropdown => {
-        dropdown.open = false;
-      });
       this.dispatchEvent(new CustomEvent('drawer-closed', { bubbles: true, composed: true }));
+      this.updateDropdownState();
       this.updateDrawerState();
     }
   }
