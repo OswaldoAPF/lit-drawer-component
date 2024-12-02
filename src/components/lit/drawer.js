@@ -1,6 +1,6 @@
 import { LitElement, html, css} from 'lit';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
-import packageJson from '../../../package.json';
+
 
 class DrawerComponent extends LitElement {
   static properties = {
@@ -17,15 +17,15 @@ class DrawerComponent extends LitElement {
     }
 
     :host {
-      --background-color: #ffffff;
-      --primary-color: #8350E6;
-      --hover-background-color: #F3EEFC;
-      --hover-primary-color: #47279B;
-      --font-color: #3E4047;
-      --transition-02: all 0.2s ease;
-      --transition-03: all 0.3s ease;
-      --transition-04: all 0.4s ease;
-      --transition-05: all 0.5s ease;
+      --background-color: inherit;
+      --primary-color: inherit;
+      --hover-background-color: inherit;
+      --hover-primary-color: inherit;
+      --font-color: inherit;
+      --transition-02: inherit;
+      --transition-03: inherit;
+      --transition-04: inherit;
+      --transition-05: inherit;
 
       position: fixed;
       top: 0;
@@ -38,6 +38,7 @@ class DrawerComponent extends LitElement {
       background: var(--background-color);
       transition: var(--transition-05);
       user-select: none;
+      z-index: 10;
     }
 
     :host([open]) {
@@ -101,6 +102,10 @@ class DrawerComponent extends LitElement {
       justify-content: center;
       width: 100%;
     }
+
+    .main__list:first-child {
+      margin-bottom: 10px;
+    }
     
     .main__list .item__list{
       height: 48px;
@@ -151,7 +156,7 @@ class DrawerComponent extends LitElement {
       border-radius: 8px;
     }
 
-    .item__list.active .link__item .icon {
+    .item__list.active .link__item .icon, .item__list.active .link__item .label  {
       color: var(--primary-color);
     }
     
@@ -191,7 +196,7 @@ class DrawerComponent extends LitElement {
     :host .name__dropdown {
       display: none;
       font-size: 1.1rem;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--font-color);
     }
 
@@ -301,7 +306,6 @@ class DrawerComponent extends LitElement {
   checkActiveOptions() {
     if (!this.currentPath || !this.group) return;
   
-    // Actualizar el estado `active` según el `currentPath`
     let needsUpdate = false;
     this.group.options.forEach(option => {
       const isActive = this.currentPath.includes(option.key);
@@ -327,7 +331,8 @@ class DrawerComponent extends LitElement {
   }
 
 
-  toggleDrawer() {
+  toggleDrawer(event) {
+    event.stopPropagation(); 
     this.open = !this.open;
 
     if (!this.open) {
@@ -342,7 +347,8 @@ class DrawerComponent extends LitElement {
     window.history.replaceState({}, '', `${window.location.pathname}?${params}`);
   }
 
-  handleOptionClick(option) {
+  handleOptionClick(option, event) {
+    event.stopPropagation();
     this.open = true;
     this.currentPath = option.key;
   
@@ -357,7 +363,8 @@ class DrawerComponent extends LitElement {
     );
   }
 
-  toggleDropdown(index) {
+  toggleDropdown(index, event) {
+    event.stopPropagation();
     this.open = true
     this.group.dropdowns.forEach((dropdown, i) => {
       dropdown.open = i === index ? !dropdown.open : false;
@@ -365,10 +372,43 @@ class DrawerComponent extends LitElement {
     this.requestUpdate();
   }
 
+  connectedCallback() {
+    super.connectedCallback();
+    document.addEventListener('click', this.handleOutsideClick.bind(this));
+  }
+  
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    document.removeEventListener('click', this.handleOutsideClick.bind(this));
+  }
+
+  handleOutsideClick(event) {
+    const drawer = this.shadowRoot.querySelector('.drawer');
+    
+    if (drawer && !drawer.contains(event.target) && this.open) {
+      this.open = false;
+      if (!this.open) {
+        this.group.dropdowns.forEach(dropdown => {
+          dropdown.open = false;
+        });
+      }
+
+      this.dispatchEvent(
+        new CustomEvent('drawer-closed', {
+          bubbles: true,
+          composed: true,
+        })
+      );
+
+      const params = new URLSearchParams(window.location.search);
+      params.set('drawer', 'closed');
+      window.history.replaceState({}, '', `${window.location.pathname}?${params}`);
+    }
+  }
+
   updated(changedProperties) {
     super.updated(changedProperties);
   
-    // Verificar si el `currentPath` o el grupo cambió
     if (changedProperties.has('currentPath') || changedProperties.has('group')) {
       this.checkActiveOptions();
     }
@@ -383,18 +423,10 @@ class DrawerComponent extends LitElement {
       <div class="drawer">
         <header class="header">
           <div class="container__logo__img">
-            <img
-              src="./logo.svg"
-              class="logo__img"
-              alt="logo"
-            />
+            <slot name="logo-img"></slot>
           </div>
           <div class="container__logo__text">
-            <img
-              src="./selia.svg"
-              class="logo__text"
-              alt="selia"
-            />
+            <slot name="logo-text"></slot>
           </div>
           
         </header>
@@ -403,37 +435,39 @@ class DrawerComponent extends LitElement {
             ${this.group.options.map(
               option => html`
               <li class="item__list ${option.active ? 'active' : ''}">
-                <a class="link__item" @click="${() => this.handleOptionClick(option)}">
+                <a class="link__item" @click="${(event) => this.handleOptionClick(option, event)}">
                   <div class="icon">${this.renderSVG(option.icon)}</div>
                   <div class="label">${option.label}</div>
                 </a>
               </li>
               `
             )}
-        ${this.group.dropdowns.map((dropdown, index) => html`
-          <li class="dropdown" ?open="${dropdown.open}">
-            <div class="header__dropdown" @click="${() => this.toggleDropdown(index)}">
-              <span class="name__dropdown">${dropdown.name}</span>
-              <img class="icon__dropdown" src="../../dropdown.svg"/>
-            </div>
-            <ul class="dropdown-content">
-              ${dropdown.options.map(option => html`
-              <li class="item__list ${option.active ? 'active' : ''}">
-                <a class="link__item" @click="${() => this.handleOptionClick(option)}">
-                  <div class="icon">${this.renderSVG(option.icon)}</div>
-                  <div class="label">${option.label}</div>
-                </a>
+          </ul>
+          <ul class="main__list">
+            ${this.group.dropdowns.map((dropdown, index) => html`
+              <li class="dropdown" ?open="${dropdown.open}">
+                <div class="header__dropdown" @click="${(event) => this.toggleDropdown(index, event)}">
+                  <span class="name__dropdown">${dropdown.name}</span>
+                  <img class="icon__dropdown" src="../../dropdown.svg"/>
+                </div>
+                <ul class="dropdown-content">
+                  ${dropdown.options.map(option => html`
+                  <li class="item__list ${option.active ? 'active' : ''}">
+                    <a class="link__item" @click="${(event) => this.handleOptionClick(option, event)}">
+                      <div class="icon">${this.renderSVG(option.icon)}</div>
+                      <div class="label">${option.label}</div>
+                    </a>
+                  </li>
+                  `)}
+                </ul>
               </li>
-              `)}
-            </ul>
-          </li>
-        `)}
+            `)}
           </ul>
         </div>
         <div class="footer">
           <div>
-            <p>${packageJson.name}</p>
-            <p>v${packageJson.version}</p>
+            <slot name="json-name"></slot>
+            <slot name="json-version"></slot>
           </div>
           <button class="open__drawer" @click="${this.toggleDrawer}">
             <img class="" src="../../dropdown.svg"/>

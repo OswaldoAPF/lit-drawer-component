@@ -1,10 +1,16 @@
 <template>
   <drawer-component
+    ref="drawer"
     :group="selectedOptions"
     :current-path="currentPath"
     @option-selected="handleOptionSelected"
-    :oepn="isOpen"
-  ></drawer-component>
+    @drawer-closed="isOpen = false"
+  >
+    <img slot="logo-img" src="../public/logo.svg" alt="logo" class="logo__img" />
+    <img slot="logo-text" src="../public/selia.svg" alt="selia" class="logo__text" />
+    <p slot="json-name">{{ packageJson.name }}</p>
+    <p slot="json-version">v{{ packageJson.version }}</p>
+  </drawer-component>
 
   <div class="group__nav">
     <button @click="selectOptions(0)">Group 1</button>
@@ -15,6 +21,7 @@
 <script>
 import './components/lit/drawer';
 import { options } from './data/options';
+import packageJson from '../package.json';
 
 export default {
   data() {
@@ -23,6 +30,7 @@ export default {
       isOpen: false,
       currentPath: '',
       selectedOptions: options[0],
+      packageJson,
     };
   },
   methods: {
@@ -38,6 +46,7 @@ export default {
     },
     handleOptionSelected(event) {
       const { key } = event.detail;
+      this.isOpen = this.$refs.drawer.open;
       this.$router.push(`${key}?drawer=${this.isOpen ? 'open' : 'closed'}`);
     },
     updateActiveOptions() {
@@ -54,18 +63,8 @@ export default {
     },
     handleOptionSelected(event) {
     const { key } = event.detail;
-
-    // Actualizar la ruta
     this.$router.push(`${key}?drawer=open`);
-
-    // Cambiar el estado de `isOpen` a true
     this.isOpen = true;
-
-    // Sincronizar con el componente Lit (opcional)
-    const drawer = this.$el.querySelector('drawer-component');
-    if (drawer) {
-      drawer.open = true;
-    }
   },
   },
   watch: {
@@ -83,13 +82,37 @@ export default {
 
 <style>
 .group__nav {
-  width: 100%;
   display: flex;
   justify-content: center;
+  gap: 1rem;
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: all 0.3s ease-in-out;
+  padding: 0 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .group__nav button {
-  all: unset;
+  background-color: transparent;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  color: #333;
+  font-size: 1rem;
+  padding: 10px 20px;
   cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.group__nav button:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.group__nav button:focus {
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
 </style>
