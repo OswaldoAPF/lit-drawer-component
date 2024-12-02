@@ -1,13 +1,14 @@
 <template>
   <drawer-component
     ref="drawer"
+    :open="isOpen"
     :group="selectedOptions"
     :current-path="currentPath"
     @option-selected="handleOptionSelected"
     @drawer-closed="isOpen = false"
   >
-    <img slot="logo-img" src="../public/logo.svg" alt="logo" class="logo__img" />
-    <img slot="logo-text" src="../public/selia.svg" alt="selia" class="logo__text" />
+    <img slot="logo-img" src="../logo.svg" alt="logo" class="logo__img" />
+    <img slot="logo-text" src="../selia.svg" alt="selia" class="logo__text" />
     <p slot="json-name">{{ packageJson.name }}</p>
     <p slot="json-version">v{{ packageJson.version }}</p>
   </drawer-component>
@@ -46,7 +47,7 @@ export default {
     },
     handleOptionSelected(event) {
       const { key } = event.detail;
-      this.isOpen = this.$refs.drawer.open;  // Sync with the drawer's state
+      this.isOpen = this.$refs.drawer.open;
       this.$router.push(`${key}?drawer=${this.isOpen ? 'open' : 'closed'}`);
     },
     updateActiveOptions() {
