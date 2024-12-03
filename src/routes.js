@@ -6,7 +6,7 @@ const routes = [
     component: '',
     children: [
       {
-        path: ':option',
+        path: ':option?',
         component: () => import('./views/DynamicView.vue'),
       }
     ],
