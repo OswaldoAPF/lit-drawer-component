@@ -303,6 +303,7 @@ class DrawerComponent extends LitElement {
     if (drawerState === 'open') {
       this.open = true;
     }
+    this.checkActiveOptions()
   }
 
   updateDrawerState() {
@@ -403,7 +404,7 @@ class DrawerComponent extends LitElement {
       this.dispatchEvent(new CustomEvent('drawer-closed', { bubbles: true, composed: true }));
       this.updateDropdownState();
       this.updateDrawerState();
-      this.checkActiveOptions()
+      this.checkActiveOptions();
     }
   }
 

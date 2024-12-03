@@ -1,7 +1,8 @@
 <template>
   <div class="group__nav">
-    <button @click="selectOptions(0)">Group 1</button>
-    <button @click="selectOptions(1)">Group 2</button>
+    <button v-for="(group, index) in options" :key="index" @click="selectGroup(group.key)">
+      {{ group.name }}
+    </button>
   </div>
 
   <drawer-component
@@ -17,9 +18,7 @@
     <p slot="json-version">v{{ packageJson.version }}</p>
   </drawer-component>
 
-  <section>
-    <h1 v-if="currentSection">Bienvendido a <span>{{ currentSection }}</span></h1>
-  </section>
+  <router-view />
 </template>
 
 <script>
@@ -34,29 +33,61 @@ export default {
       isOpen: false,
       currentPath: '',
       currentSection: '',
-      selectedOptions: options[0],
+      selectedOptions: null,
       packageJson,
     };
   },
+  computed: {
+    currentGroup() {
+      return this.$route.params.group || 'group-1';
+    },
+  },
   methods: {
+    updateRouteWithDrawer(newRoute) {
+      this.isOpen = this.$refs.drawer.open;
+      this.$router.push({
+        path: newRoute,
+        query: {
+          ...this.$route.query,
+          drawer: this.isOpen ? 'open' : 'closed',
+        },
+      });
+    },
+
+    selectGroup(groupKey) {
+      if (this.$route.params.group === groupKey) return;
+
+      const selectedOption = this.$route.params.option;
+      const newRoute = `/${groupKey}/${selectedOption || ''}`;
+
+      this.updateRouteWithDrawer(newRoute);
+    },
+
+    handleOptionSelected(event) {
+      const { key } = event.detail;
+      const newRoute = `/${this.currentGroup}/${key}`;
+      this.updateRouteWithDrawer(newRoute);
+    },
+
     selectOptions(index) {
       this.selectedOptions = this.options[index];
     },
-    handleOptionSelected(event) {
-      const { key } = event.detail;
-      this.isOpen = this.$refs.drawer.open;
-      this.$router.push(`${key}?drawer=${this.isOpen ? 'open' : 'closed'}`);
-    },
+    selectGroupKey() {
+      const groupKey = this.currentGroup;
+      this.selectedOptions = this.options.find(group => group.key === groupKey) || this.options[0];
+    }
+
   },
   watch: {
-    '$route'(to) {
-      this.currentPath = to.path;
-      this.currentSection = window.location.pathname.split('/').pop().replace(/^\w/, (c) => c.toUpperCase());
+    '$route'() {
+      this.selectGroupKey()
     },
+  },
+  mounted() {
+    this.selectGroupKey()
   },
 };
 </script>
-
 <style>
 .group__nav {
   display: flex;
@@ -91,26 +122,5 @@ export default {
 .group__nav button:focus {
   outline: none;
   box-shadow: 0 0 5px var(--primary-color);
-}
-
-section {
-  width: 100%;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  user-select: none;
-}
-
-h1 {
-  font-size: 3rem;
-  color: var(--font-color);
-}
-
-h1 span {
-  background: var(--hover-background-color);
-  background: linear-gradient(0deg, var(--hover-background-color) 7%, var(--primary-color) 31%, var(--hover-primary-color) 63%);
-  -webkit-text-fill-color: transparent;
-  -webkit-background-clip: text;
 }
 </style>

@@ -1,4 +1,6 @@
  export const options = [{
+    name: 'Group 1',
+    key: 'group-1',
     options: [
       {
         key: 'home',
@@ -84,6 +86,8 @@
     ]
   },
   {
+    name: 'Group 2',
+    key: 'group-2',
     options: [
       {
         key: 'citas',

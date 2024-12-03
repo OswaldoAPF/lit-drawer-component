@@ -1,21 +1,19 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import App from './App.vue';
 
 const routes = [
   {
-    path: '/',
-    component: App,
+    path: '/:group',
+    component: '',
+    children: [
+      {
+        path: ':option',
+        component: () => import('./views/DynamicView.vue'),
+      }
+    ],
   },
   {
-    path: '/:option',
-    component: {
-      template: '',
-      computed: {
-        option() {
-          return this.$route.params.option.charAt(0).toUpperCase() + this.$route.params.option.slice(1);
-        }
-      }
-    }
+    path: '/',
+    redirect: '/group-1',
   },
 ];
 
