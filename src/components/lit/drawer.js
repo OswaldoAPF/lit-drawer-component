@@ -231,7 +231,7 @@ class DrawerComponent extends LitElement {
       opacity: 0;
       display: none;
       transition-property: display opacity;
-      transition-duration: 0.6s;
+      transition-duration: 0.8s;
       transition-behavior: allow-discrete;
     }
 
