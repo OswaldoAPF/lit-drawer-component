@@ -303,7 +303,6 @@ class DrawerComponent extends LitElement {
     if (drawerState === 'open') {
       this.open = true;
     }
-    this.checkActiveOptions()
   }
 
   updateDrawerState() {
