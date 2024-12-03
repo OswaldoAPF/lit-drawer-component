@@ -3,6 +3,7 @@
     <button @click="selectOptions(0)">Group 1</button>
     <button @click="selectOptions(1)">Group 2</button>
   </div>
+
   <drawer-component
     ref="drawer"
     :group="selectedOptions"
@@ -15,9 +16,10 @@
     <p slot="json-name">{{ packageJson.name }}</p>
     <p slot="json-version">v{{ packageJson.version }}</p>
   </drawer-component>
-  
-  <router-view></router-view>
 
+  <section>
+    <h1 v-if="currentSection">Bienvendido a <span>{{ currentSection }}</span></h1>
+  </section>
 </template>
 
 <script>
@@ -31,47 +33,26 @@ export default {
       options,
       isOpen: false,
       currentPath: '',
+      currentSection: '',
       selectedOptions: options[0],
       packageJson,
     };
   },
   methods: {
-    updateQueryString(params) {
-      this.$router.push({
-        path: this.$route.path,
-        query: { ...this.$route.query, ...params },
-      });
-    },
     selectOptions(index) {
       this.selectedOptions = this.options[index];
-      this.updateActiveOptions();
     },
     handleOptionSelected(event) {
       const { key } = event.detail;
       this.isOpen = this.$refs.drawer.open;
       this.$router.push(`${key}?drawer=${this.isOpen ? 'open' : 'closed'}`);
     },
-    updateActiveOptions() {
-      if (!this.selectedOptions || !this.currentPath) return;
-
-      const updateOptionStatus = option => {
-        option.active = this.currentPath.includes(option.key);
-      };
-
-      this.selectedOptions.options.forEach(updateOptionStatus);
-      this.selectedOptions.dropdowns.forEach(dropdown => {
-        dropdown.options.forEach(updateOptionStatus);
-      });
-    },
   },
   watch: {
     '$route'(to) {
       this.currentPath = to.path;
+      this.currentSection = window.location.pathname.split('/').pop().replace(/^\w/, (c) => c.toUpperCase());
     },
-  },
-  mounted() {
-    this.currentPath = this.$route.path || '/';
-    this.updateActiveOptions();
   },
 };
 </script>
@@ -110,5 +91,26 @@ export default {
 .group__nav button:focus {
   outline: none;
   box-shadow: 0 0 5px var(--primary-color);
+}
+
+section {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+}
+
+h1 {
+  font-size: 3rem;
+  color: var(--font-color);
+}
+
+h1 span {
+  background: var(--hover-background-color);
+  background: linear-gradient(0deg, var(--hover-background-color) 7%, var(--primary-color) 31%, var(--hover-primary-color) 63%);
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
 }
 </style>

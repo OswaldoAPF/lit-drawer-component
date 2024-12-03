@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import App from './App.vue';
-import DynamicView from './views/DynamicView.vue';
 
 const routes = [
   {
@@ -9,8 +8,15 @@ const routes = [
   },
   {
     path: '/:option',
-    component: DynamicView,
-  }
+    component: {
+      template: '',
+      computed: {
+        option() {
+          return this.$route.params.option.charAt(0).toUpperCase() + this.$route.params.option.slice(1);
+        }
+      }
+    }
+  },
 ];
 
 const router = createRouter({
