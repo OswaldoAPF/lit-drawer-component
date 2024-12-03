@@ -362,8 +362,7 @@ class DrawerComponent extends LitElement {
     this.checkActiveOptions()
   }
 
-  handleOptionClick(option, event) {
-    event.stopPropagation();
+  handleOptionClick(option) {
     this.open = true;
     this.currentPath = option.key;
 
@@ -376,8 +375,7 @@ class DrawerComponent extends LitElement {
     );
   }
 
-  toggleDropdown(index, event) {
-    event.stopPropagation();
+  toggleDropdown(index) {
     this.open = true;
     this.group.dropdowns.forEach((dropdown, i) => {
       dropdown.open = i === index ? !dropdown.open : false;
@@ -402,9 +400,10 @@ class DrawerComponent extends LitElement {
 
     if (drawer && !drawer.contains(event.target) && this.open) {
       this.open = false;
-      this.updateDropdownState();
       this.dispatchEvent(new CustomEvent('drawer-closed', { bubbles: true, composed: true }));
+      this.updateDropdownState();
       this.updateDrawerState();
+      this.checkActiveOptions()
     }
   }
 
@@ -416,13 +415,17 @@ class DrawerComponent extends LitElement {
     }
   }
 
+  handleDrawerClick(event) {
+    event.stopPropagation();
+  }
+
   render() {
     if (!this.group || !this.group.options) {
       return html`<div>No hay opciones disponibles</div>`;
     }
 
     return html`
-      <div class="drawer">
+      <div class="drawer" @click="${this.handleDrawerClick}">
         <header class="header">
           <div class="container__logo__img">
             <slot name="logo-img"></slot>
@@ -437,7 +440,7 @@ class DrawerComponent extends LitElement {
             ${this.group.options.map(
               option => html`
               <li class="item__list ${option.active ? 'active' : ''}" title="${option.label}">
-                <a class="link__item" @click="${(event) => this.handleOptionClick(option, event)}">
+                <a class="link__item" @click="${() => this.handleOptionClick(option)}">
                   <div class="icon">${this.renderSVG(option.icon)}</div>
                   <div class="label">${option.label}</div>
                 </a>
@@ -448,14 +451,14 @@ class DrawerComponent extends LitElement {
           <ul class="main__list">
             ${this.group.dropdowns.map((dropdown, index) => html`
               <li class="dropdown" ?open="${dropdown.open}">
-                <div class="header__dropdown" @click="${(event) => this.toggleDropdown(index, event)}">
+                <div class="header__dropdown" @click="${() => this.toggleDropdown(index)}">
                   <span class="name__dropdown">${dropdown.name}</span>
                   <img class="icon__dropdown" src="../../dropdown.svg"/>
                 </div>
                 <ul class="dropdown-content">
                   ${dropdown.options.map(option => html`
                   <li class="item__list ${option.active ? 'active' : ''}" title="${option.label}">
-                    <a class="link__item" @click="${(event) => this.handleOptionClick(option, event)}">
+                    <a class="link__item" @click="${() => this.handleOptionClick(option)}">
                       <div class="icon">${this.renderSVG(option.icon)}</div>
                       <div class="label">${option.label}</div>
                     </a>
